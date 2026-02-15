@@ -1,29 +1,24 @@
 use dotenv::dotenv;
-use std::env;
-use log::{info, warn, error};
-
+use log::{info, warn};
 mod api;
 mod trading;
-mod web;
-mod models;
-mod utils;
+
+use trading::strategy::ScalpingStrategy;
 
 #[tokio::main]
-async fn main() {
-    // Initialize environment
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
     env_logger::init();
+
+    info!("Iniciando bot de trading en testnet");
+
+    let strategy = ScalpingStrategy::new("BTC-USDC".to_string());
     
-    info!("🤖 Survival Trading Bot iniciando...");
-    
-    // Load configuration
-    let wallet_address = env::var("HL_WALLET_ADDRESS").expect("HL_WALLET_ADDRESS no encontrada en .env");
-    let webhook_url = env::var("DISCORD_WEBHOOK_URL").expect("DISCORD_WEBHOOK_URL no encontrada en .env");
-    
-    info!("Wallet configurada: {}", wallet_address);
-    info!("Discord webhook configurado");
-    
-    // TODO: Implementar lógica principal
-    
-    info!("Bot iniciado y listo para tradear por su supervivencia 🚀");
+    info!("Ejecutando operación de prueba...");
+    match strategy.execute_test_trade().await {
+        Ok(_) => info!("Operación de prueba completada exitosamente"),
+        Err(e) => warn!("Error en operación de prueba: {}", e),
+    }
+
+    Ok(())
 }
